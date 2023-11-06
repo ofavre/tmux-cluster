@@ -48,6 +48,7 @@ Options:
     -l LAYOUT       Select a tmux layout.
     -H              Use even-horizontal tmux layout.
     -V              Use even-vertical tmux layout.
+    -u USER         User for SSH connection
 EOF
 }
 
@@ -92,9 +93,10 @@ CUSTOM_CLUSTER_LINE=""
 EXCLUDED_HOSTS=""
 USE_EXISTING_SESSION=""
 LAYOUT="tiled"
+USER=""
 
 # parse args
-while getopts :hdtc:x:wHVl: OPT; do
+while getopts :hdtc:x:wHVl:u: OPT; do
     case $OPT in
         h)
             usage
@@ -123,6 +125,9 @@ while getopts :hdtc:x:wHVl: OPT; do
             ;;
         l)
             LAYOUT="$OPTARG"
+            ;;
+        u)
+            USER="$OPTARG"
             ;;
         \?)
             echo "error: invalid option -$OPTARG" 1>&2
@@ -265,7 +270,11 @@ else
     HOSTS=""
 fi
 
-SHELL_CMD="ssh $HOST; [ \$? -eq 255 ] && (echo Press ENTER to close pane; read enter)"
+SSH_USER_PART=''
+if [ -n "$USER" ]; then
+  SSH_USER_PART="$USER@"
+fi
+SHELL_CMD="ssh $SSH_USER_PART$HOST; [ \$? -eq 255 ] && (echo Press ENTER to close pane; read enter)"
 
 # if we're running in tmux, get dimensions of the current window
 # this is needed if tmc is run inside run-shell, since the default window size is 80x24
@@ -288,7 +297,7 @@ else
 fi
 
 for HOST in $HOSTS; do
-    SHELL_CMD="ssh $HOST; [ \$? -eq 255 ] && (echo Press ENTER to close pane; read enter)"
+    SHELL_CMD="ssh $SSH_USER_PART$HOST; [ \$? -eq 255 ] && (echo Press ENTER to close pane; read enter)"
     TMUX_CMDS="${TMUX_CMDS}splitw $TMUX_SESSION_T_ARG \"$SHELL_CMD\"$NL"
     TMUX_CMDS="${TMUX_CMDS}select-layout $TMUX_SESSION_T_ARG $LAYOUT$NL"
 done
