@@ -274,7 +274,8 @@ SSH_USER_PART=''
 if [ -n "$USER" ]; then
   SSH_USER_PART="$USER@"
 fi
-SHELL_CMD="ssh $SSH_USER_PART$HOST; [ \$? -eq 255 ] && (echo Press ENTER to close pane; read enter)"
+# The TERM export helps for obsolete systems not recognizing tmux-256color
+SHELL_CMD="export TERM=xterm-256color; ssh $SSH_USER_PART$HOST; [ \$? -eq 255 ] && (echo Press ENTER to close pane; read enter)"
 
 # if we're running in tmux, get dimensions of the current window
 # this is needed if tmc is run inside run-shell, since the default window size is 80x24
@@ -297,7 +298,8 @@ else
 fi
 
 for HOST in $HOSTS; do
-    SHELL_CMD="ssh $SSH_USER_PART$HOST; [ \$? -eq 255 ] && (echo Press ENTER to close pane; read enter)"
+    # The TERM export helps for obsolete systems not recognizing tmux-256color
+    SHELL_CMD="export TERM=xterm-256color; ssh $SSH_USER_PART$HOST; [ \$? -eq 255 ] && (echo Press ENTER to close pane; read enter)"
     TMUX_CMDS="${TMUX_CMDS}splitw $TMUX_SESSION_T_ARG \"$SHELL_CMD\"$NL"
     TMUX_CMDS="${TMUX_CMDS}select-layout $TMUX_SESSION_T_ARG $LAYOUT$NL"
 done
