@@ -49,6 +49,11 @@ Options:
     -H              Use even-horizontal tmux layout.
     -V              Use even-vertical tmux layout.
     -u USER         User for SSH connection
+    -s SEND_KEYS    Simulated input keys to give using tmux send-keys command
+                        after connecting. Use \\n to simulate pressing enter
+                        to run the commands. Some shells use Alt-Enter to send
+                        a newline (\\x1B\\x0A) without executing the commands.
+    -S              Do not synchronize panes
 EOF
 }
 
@@ -94,9 +99,11 @@ EXCLUDED_HOSTS=""
 USE_EXISTING_SESSION=""
 LAYOUT="tiled"
 USER=""
+SEND_KEYS=""
+SYNC_PANES="on"
 
 # parse args
-while getopts :hdtc:x:wHVl:u: OPT; do
+while getopts :hdtc:x:wHVl:u:s:S OPT; do
     case $OPT in
         h)
             usage
@@ -129,6 +136,12 @@ while getopts :hdtc:x:wHVl:u: OPT; do
         u)
             USER="$OPTARG"
             ;;
+        s)
+            SEND_KEYS="$OPTARG"
+            ;;
+        S)
+            SYNC_PANES="off"
+            ;;
         \?)
             echo "error: invalid option -$OPTARG" 1>&2
             usage 1>&2
@@ -143,6 +156,9 @@ while getopts :hdtc:x:wHVl:u: OPT; do
 done
 
 shift $((OPTIND-1))
+
+# Escape " as \"
+SEND_KEYS="${SEND_KEYS//\"/\\\"}"
 
 # if -w option is used, make sure we're in tmux
 if [ "$USE_EXISTING_SESSION" = "true" -a -z "$TMUX" ]; then
@@ -304,8 +320,6 @@ for HOST in $HOSTS; do
     TMUX_CMDS="${TMUX_CMDS}select-layout $TMUX_SESSION_T_ARG $LAYOUT$NL"
 done
 
-TMUX_CMDS="${TMUX_CMDS}set-window-option $TMUX_SESSION_T_ARG synchronize-panes on$NL"
-
 # if we're inside a tmux client, switch-client, else attach
 if [ -n "$TMUX" ]; then
     # only switch client if we created a new session
@@ -319,6 +333,13 @@ fi
 
 # fix issue with incorrect layout after call to switch-client
 TMUX_CMDS="${TMUX_CMDS}select-layout $TMUX_SESSION_T_ARG $LAYOUT$NL"
+
+if [ -n "$SEND_KEYS" ]; then
+    TMUX_CMDS="${TMUX_CMDS}set-window-option $TMUX_SESSION_T_ARG synchronize-panes on$NL"
+    TMUX_CMDS="${TMUX_CMDS}send-keys \"$SEND_KEYS\"${NL}"
+fi
+
+TMUX_CMDS="${TMUX_CMDS}set-window-option $TMUX_SESSION_T_ARG synchronize-panes $SYNC_PANES$NL"
 
 # dump tmux commands
 if [ -n "$DUMP_TMUX_CMDS" ]; then
