@@ -242,7 +242,7 @@ fi
 SESSION_NAME=""
 # set session name
 if [ -z "$USE_EXISTING_SESSION" ]; then
-    SESSION_NAME="cluster-$CLUSTER-$(date +%Y%m%dT%H%M%S)"
+    SESSION_NAME="cluster-$CLUSTER-$(date +%Y%m%dT%H%M%S%N)-$RANDOM"
 
     # check for existing tmux session of the specified cluster
     if [ -z "$DUMP_HOSTS" -a -z "$DUMP_TMUX_CMDS" ]; then
