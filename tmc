@@ -336,7 +336,7 @@ TMUX_CMDS="${TMUX_CMDS}select-layout $TMUX_SESSION_T_ARG $LAYOUT$NL"
 
 if [ -n "$SEND_KEYS" ]; then
     TMUX_CMDS="${TMUX_CMDS}set-window-option $TMUX_SESSION_T_ARG synchronize-panes on$NL"
-    TMUX_CMDS="${TMUX_CMDS}send-keys \"$SEND_KEYS\"${NL}"
+    TMUX_CMDS="${TMUX_CMDS}send-keys $TMUX_SESSION_T_ARG \"$SEND_KEYS\"${NL}"
 fi
 
 TMUX_CMDS="${TMUX_CMDS}set-window-option $TMUX_SESSION_T_ARG synchronize-panes $SYNC_PANES$NL"
