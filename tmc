@@ -317,7 +317,9 @@ for HOST in $HOSTS; do
     # The TERM export helps for obsolete systems not recognizing tmux-256color
     SHELL_CMD="export TERM=xterm-256color; ssh $SSH_USER_PART$HOST; [ \$? -eq 255 ] && (echo Press ENTER to close pane; read enter)"
     TMUX_CMDS="${TMUX_CMDS}splitw $TMUX_SESSION_T_ARG \"$SHELL_CMD\"$NL"
-    TMUX_CMDS="${TMUX_CMDS}select-layout $TMUX_SESSION_T_ARG $LAYOUT$NL"
+    # Re-tile after each split so the next pane has room to split.
+    # The requested LAYOUT is applied once at the end (see below).
+    TMUX_CMDS="${TMUX_CMDS}select-layout $TMUX_SESSION_T_ARG tiled$NL"
 done
 
 # if we're inside a tmux client, switch-client, else attach
